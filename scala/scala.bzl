@@ -525,10 +525,10 @@ _common_attrs = {
 
 scala_library = rule(
   implementation=_scala_library_impl,
-  attrs={
+  attrs=dict({
       "main_class": attr.string(),
       "exports": attr.label_list(allow_files=False),
-      } + _implicit_deps + _common_attrs,
+      }.items() + _implicit_deps.items() + _common_attrs.items()),
   outputs={
       "jar": "%{name}.jar",
       "deploy_jar": "%{name}_deploy.jar",
@@ -539,10 +539,10 @@ scala_library = rule(
 
 scala_macro_library = rule(
   implementation=_scala_macro_library_impl,
-  attrs={
+  attrs=dict({
       "main_class": attr.string(),
       "exports": attr.label_list(allow_files=False),
-      } + _implicit_deps + _common_attrs,
+      }.items() + _implicit_deps.items() + _common_attrs.items()),
   outputs={
       "jar": "%{name}.jar",
       "deploy_jar": "%{name}_deploy.jar",
@@ -552,9 +552,9 @@ scala_macro_library = rule(
 
 scala_binary = rule(
   implementation=_scala_binary_impl,
-  attrs={
+  attrs=dict({
       "main_class": attr.string(mandatory=True),
-      } + _implicit_deps + _common_attrs,
+      }.items() + _implicit_deps.items() + _common_attrs.items()),
   outputs={
       "jar": "%{name}.jar",
       "deploy_jar": "%{name}_deploy.jar",
@@ -562,16 +562,23 @@ scala_binary = rule(
       },
   executable=True,
 )
+"""A Scala binary.
+
+Here is a description of a scala binary.
+
+Args:
+  main_class: Class containing the entry point of this application.
+"""
 
 scala_test = rule(
   implementation=_scala_test_impl,
-  attrs={
+  attrs=dict({
       "main_class": attr.string(default="org.scalatest.tools.Runner"),
       "suites": attr.string_list(),
       "_scalatest": attr.label(default=Label("@scalatest//file"), single_file=True, allow_files=True),
       "_scalatest_reporter": attr.label(default=Label("//scala/support:test_reporter")),
       "_scalaxml": attr.label(default=Label("@scala//:lib/scala-xml_2.11-1.0.4.jar"), single_file=True, allow_files=True),
-      } + _implicit_deps + _common_attrs,
+      }.items() + _implicit_deps.items() + _common_attrs.items()),
   outputs={
       "jar": "%{name}.jar",
       "deploy_jar": "%{name}_deploy.jar",
@@ -583,11 +590,11 @@ scala_test = rule(
 
 scala_repl = rule(
   implementation=_scala_repl_impl,
-  attrs= _implicit_deps +
-    _common_attrs +
+  attrs= dict(_implicit_deps.items() +
+    _common_attrs.items() +
     {
         "_scala": attr.label(executable=True, cfg="data", default=Label("@scala//:bin/scala"), single_file=True, allow_files=True)
-    },
+    }.items()),
   outputs={},
   executable=True,
 )
@@ -626,6 +633,11 @@ exports_files([
 """
 
 def scala_repositories():
+  """Initialize the Scala toolchain.
+
+  This macro initializes targets for the Scala toolchain (e.g.: `scalac`, `scalatest`).
+  The Scala version is hard-coded at this time.
+  """
   native.new_http_archive(
     name = "scala",
     strip_prefix = "scala-2.11.8",
